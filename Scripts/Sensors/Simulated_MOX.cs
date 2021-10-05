@@ -90,7 +90,8 @@ public class Simulated_MOX : MonoBehaviour
         },
 
         new float[][]{  //TGS2600
-        new float[]{4.8f, 18.75f},   //ethanol
+        // new float[]{4.8f, 18.75f},   //ethanol
+        new float[]{0.1f, 0.1f},   //ethanol
         new float[]{4.8f, 18.75f},   //methane
         new float[]{4.8f, 18.75f},   //hydrogen
         new float[]{4.8f, 18.75f},   //propanol
@@ -141,10 +142,11 @@ public class Simulated_MOX : MonoBehaviour
     
     
     
-    float getMeasurement(Vector3 request){
+    public float getMeasurement(Vector3 request){
 
         GasMeasurement response=gadenPlayer.GetComponent<GADEN_player>().getConcentration(request);
-        return simulate_mox_as_line_loglog(response);
+        // return simulate_mox_as_line_loglog(response);
+        return response.ppm;
     }
 
     float simulate_mox_as_line_loglog(GasMeasurement gasMeasurement)

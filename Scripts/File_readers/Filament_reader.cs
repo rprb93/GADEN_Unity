@@ -112,9 +112,18 @@ public class Filament_reader: File_reader
         particleSystem.GetParticles(existingParticles);
         int newParticleIndex = 0;
         foreach(int filament_index in filaments.Keys.ToList()){
+        // for(int filament_index=0; filament_index<82; filament_index++ ){
             ParticleSystem.Particle p;
             if(filamentToParticle.ContainsKey(filament_index)){
-                p = existingParticles[filamentToParticle[filament_index]];
+                int test = filamentToParticle[filament_index];
+
+                if(existingParticles.Length > test){
+                    p = existingParticles[test];
+                }
+                else{
+                    p=particleTemplate;
+                    p.rotation=(float)(rand.NextDouble())*360;
+                }
             }
             else{
                 p=particleTemplate;
@@ -130,11 +139,24 @@ public class Filament_reader: File_reader
                                         (filaments_next_step[filament_index].z-filaments[filament_index].z)/updateInterval);
                 p.velocity=vel;
             }
-            p.startSize=visibleRadiusFromConcentrationThreshold(filaments[filament_index].w);
-            
-            int opacity = (int)(255*(5/filaments[filament_index].w));
-            p.startColor=new Color32(255, 255, 255, (byte)opacity );
 
+            if(concentrationPointCloud.enable){
+                p.startSize = concentrationPointCloud.pointSize;
+
+                float conc = getConcentration(p.position);
+                float concMap = Map(conc, concentrationPointCloud.limitMin, concentrationPointCloud.limitMax, 0, 1);
+                // Color test = concentrationPointCloud.gradientColor.Evaluate(1)*255;
+                // Color32 newColor = new Color32((byte)test.r, (byte)test.g, (byte)test.b, (byte)test.a);
+                // p.startColor = newColor;
+                p.startColor = concentrationPointCloud.gradientColor.Evaluate(concMap);
+            }
+            else{
+                p.startSize=visibleRadiusFromConcentrationThreshold(filaments[filament_index].w);
+
+                int opacity = (int)(255*(5/filaments[filament_index].w));
+                p.startColor=new Color32(255, 255, 255, (byte)opacity );
+            }
+            
             //set this particle to be emitted and update the indexes so that it can be modified next iteration
             particlesToEmit.Add(p);
             newDictionary.Add(filament_index,newParticleIndex);
@@ -144,6 +166,11 @@ public class Filament_reader: File_reader
     
         particleSystem.SetParticles(particlesToEmit.ToArray(), particlesToEmit.Count);
 
+    }
+
+    private float Map(float input, float inputMin, float inputMax, float min, float max)
+    {
+        return min + (input - inputMin) * (max - min) / (inputMax - inputMin);
     }
 
     public override float getConcentration(Vector3 position) {

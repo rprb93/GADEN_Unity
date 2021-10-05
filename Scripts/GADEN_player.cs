@@ -2,13 +2,27 @@ using UnityEngine;
 using System;
 using System.IO;
 
+[System.Serializable]
+public class ConcentrationPointCloud{
+    public bool enable = false; //activate smoke display in function of threshold concentration
+    public int limitMin = 0;
+    public int limitMax = 1;
+    public Gradient gradientColor;
+    public float pointSize = 0.1f; 
+}
 public class GADEN_player:MonoBehaviour{
+    
     public float visibleConcentrationThreshold; //concentration, in ppm, above which gas should be visible
+    public ConcentrationPointCloud concentrationPointCloud;
     public string filePath; //path to gas simulation logs, minus the iteration counter 
     public string occupancyFile; //OccupancyGrid3D.csv
     public float updateInterval; //minimum time before moving to next iteration
     File_reader g;
-    new public ParticleSystem particleSystem;  
+    public ParticleSystem particleSmoke;
+    public ParticleSystem particlePointCloud; 
+
+    
+
     void Start(){
         var stream = File_reader.decompress(filePath+"/iteration_0");
         BinaryReader br = new BinaryReader(stream);
@@ -22,10 +36,17 @@ public class GADEN_player:MonoBehaviour{
         stream.Close();
 
         g.filePath=filePath;
+        g.concentrationPointCloud = concentrationPointCloud;
         g.visibleConcentrationThreshold=visibleConcentrationThreshold;
         g.occupancyFile=occupancyFile;
         g.updateInterval=updateInterval;
-        g.particleSystem=particleSystem;
+        if(concentrationPointCloud.enable){
+            g.particleSystem=particlePointCloud;
+        }
+        else{
+            g.particleSystem=particleSmoke;
+        }
+        // g.particleSystem=particleSystem;
     }
 
     public GasMeasurement getConcentration(Vector3 position){

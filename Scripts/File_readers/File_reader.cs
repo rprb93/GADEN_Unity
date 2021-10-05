@@ -31,6 +31,7 @@ public abstract class File_reader : MonoBehaviour
     public float updateInterval; //minimum time before moving to next iteration
     protected float lastUpdateTimestamp; //timestamp of last update
     public float visibleConcentrationThreshold; //concentration above which gas should be visible
+    public ConcentrationPointCloud concentrationPointCloud;
     protected ParticleSystem.Particle particleTemplate;
 
 

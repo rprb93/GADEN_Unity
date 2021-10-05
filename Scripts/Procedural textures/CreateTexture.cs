@@ -45,7 +45,7 @@ public class CreateTexture : MonoBehaviour
     float angle=0;
     public float speedFactor=1;
     //this is for creating non-repeating (well, as much as that's possible) patterns through 3D noise
-    float zCoord=0;
+    // float zCoord=0;
 
     Noise.OpenSimplex2S noiseGen;
     int iterations;
