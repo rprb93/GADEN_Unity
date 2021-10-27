@@ -5,8 +5,8 @@ using System.IO;
 [System.Serializable]
 public class ConcentrationPointCloud{
     public bool enable = false; //activate smoke display in function of threshold concentration
-    public int limitMin = 0;
-    public int limitMax = 1;
+    public float limitMin = 0.0f;
+    public float limitMax = 1.0f;
     public Gradient gradientColor;
     public float pointSize = 0.1f; 
 }

@@ -119,6 +119,8 @@ public class Filament_reader: File_reader
 
                 if(existingParticles.Length > test){
                     p = existingParticles[test];
+                    // p=particleTemplate;
+                    // p.rotation=(float)(rand.NextDouble())*360;
                 }
                 else{
                     p=particleTemplate;
@@ -133,6 +135,7 @@ public class Filament_reader: File_reader
             //set new values of the particle parameters
             Vector3 pos = new Vector3(filaments[filament_index].x, filaments[filament_index].y, filaments[filament_index].z);
             p.position=pos;
+
             if(filaments_next_step.ContainsKey(filament_index)){
                 Vector3 vel = new Vector3((filaments_next_step[filament_index].x-filaments[filament_index].x)/updateInterval,
                                         (filaments_next_step[filament_index].y-filaments[filament_index].y)/updateInterval,
@@ -140,14 +143,13 @@ public class Filament_reader: File_reader
                 p.velocity=vel;
             }
 
+            float conc = concentrationFromFilament(p.position, filaments[filament_index]);
+
             if(concentrationPointCloud.enable){
                 p.startSize = concentrationPointCloud.pointSize;
 
-                float conc = getConcentration(p.position);
-                float concMap = Map(conc, concentrationPointCloud.limitMin, concentrationPointCloud.limitMax, 0, 1);
-                // Color test = concentrationPointCloud.gradientColor.Evaluate(1)*255;
-                // Color32 newColor = new Color32((byte)test.r, (byte)test.g, (byte)test.b, (byte)test.a);
-                // p.startColor = newColor;
+                float concMap = Map(conc, concentrationPointCloud.limitMax, concentrationPointCloud.limitMin, 0, 1);
+
                 p.startColor = concentrationPointCloud.gradientColor.Evaluate(concMap);
             }
             else{
@@ -158,9 +160,11 @@ public class Filament_reader: File_reader
             }
             
             //set this particle to be emitted and update the indexes so that it can be modified next iteration
-            particlesToEmit.Add(p);
-            newDictionary.Add(filament_index,newParticleIndex);
-            newParticleIndex++;
+            if(conc > visibleConcentrationThreshold){
+                particlesToEmit.Add(p);
+                newDictionary.Add(filament_index,newParticleIndex);
+                newParticleIndex++;
+            }
         }
         filamentToParticle=newDictionary;
     
@@ -225,7 +229,7 @@ public class Filament_reader: File_reader
         double distance_cm = 100 * Math.Sqrt( Math.Pow(pos.x-filament.x,2) + Math.Pow(pos.y-filament.y,2) + Math.Pow(pos.z-filament.z,2) );
 
         double num_moles_target_cm3 = (total_moles_in_filament /
-            (Math.Sqrt(8*Math.Pow(3.14159,3)) * Math.Pow(sigma,3) )) * Math.Exp( -Math.Pow(distance_cm,2)/(2*Math.Pow(sigma,2)) );
+            (Math.Sqrt(8*Math.Pow(3.14159,3)) * Math.Pow(sigma,3) )) * Math.Exp( -Math.Pow(distance_cm,2)/(Math.Pow(sigma,2)) );
 
         double ppm = num_moles_target_cm3/num_moles_all_gases_in_cm3 * 1000000; //parts of target gas per million
         return (float) (ppm);
